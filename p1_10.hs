@@ -27,3 +27,17 @@ doTestMyButLast = quickCheck testMyButLast
 
 -- 3
 
+elementAt :: [a] -> Int -> a
+elementAt [] _ = error "index out of range"
+elementAt (x:xs) 0 = x
+elementAt (x:xs) i = elementAt xs $ i - 1
+
+doTestElementAt :: IO ()
+doTestElementAt = quickCheck testElementAt
+
+testElementAt :: [Int] -> Int -> Bool
+testElementAt xs i = (i < 0) || (i >= length xs) || xs !! i == (elementAt xs i)
+
+-- 4
+
+
