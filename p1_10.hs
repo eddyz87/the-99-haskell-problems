@@ -1,4 +1,5 @@
 import Test.QuickCheck
+import Test.QuickCheck.Gen (choose)
 
 -- 1
 myLast :: [a] -> a
@@ -79,3 +80,34 @@ testIsPalindrome1 xs = isPalindrome (xs ++ reverse xs) == True
 
 testIsPalindrome2 :: [Int] -> Bool
 testIsPalindrome2 xs = isPalindrome (1 : xs ++ [2]) == False
+
+-- 7
+
+data NestedList a = Elem a
+                  | List [NestedList a]
+                  deriving (Eq, Show)
+
+flatten :: NestedList a -> [a]
+flatten x = myReverse $ flatten' [x] [] []
+  where flatten' :: [NestedList a] -> [[NestedList a]] -> [a] -> [a]
+        flatten' ((Elem x):xs) queue acc = flatten' xs queue (x:acc)
+        flatten' ((List xxs):xs) queue acc = flatten' xxs (xs:queue) acc
+        flatten' [] (xs:queue) acc = flatten' xs queue acc
+        flatten' [] [] acc = acc
+
+newtype Boo = Boo (NestedList Int, [Int]) deriving (Eq, Show)
+
+booNested (Boo (n, _)) = n
+booList (Boo (_, l)) = l
+
+instance Arbitrary Boo where
+  arbitrary = do
+    nest <- choose(True, False)
+    if nest then
+     do
+      nested <- (arbitrary :: Gen [Boo] )
+      return $ Boo (List $ map booNested nested, foldl (++) [] $ map booList nested)
+    else
+     do
+      val <- (arbitrary :: Gen Int)
+      return $ Boo (Elem val, [val])
