@@ -114,10 +114,14 @@ instance Arbitrary Boo where
 
 -- 8
       
-elementAt :: [a] -> Int -> a
-elementAt [] _ = error "index out of range"
-elementAt (x:xs) 0 = x
-elementAt (x:xs) i = elementAt xs (i - 1)
-
+compress :: Eq a => [a] -> [a]
+compress [] = []
+compress (x:xs) = compress' x xs
+  where compress' :: Eq a => a -> [a] -> [a]
+        compress' x [] = [x]
+        compress' x (y:ys) = if x == y then
+                                 compress' y ys
+                               else
+                                 x : (compress' y ys)
 
 
