@@ -111,3 +111,13 @@ instance Arbitrary Boo where
      do
       val <- (arbitrary :: Gen Int)
       return $ Boo (Elem val, [val])
+
+-- 8
+      
+elementAt :: [a] -> Int -> a
+elementAt [] _ = error "index out of range"
+elementAt (x:xs) 0 = x
+elementAt (x:xs) i = elementAt xs (i - 1)
+
+
+
