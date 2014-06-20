@@ -125,3 +125,16 @@ compress (x:xs) = compress' x xs
                                  x : (compress' y ys)
 
 
+-- 9
+pack :: Eq a => [a] -> [[a]]
+pack [] = []
+pack (x:xs) = pack' x [] xs
+  where pack' :: Eq a => a -> [a] -> [a] -> [[a]]
+        pack' x acc [] = [x:acc]
+        pack' x acc (y:ys) =
+            if x == y then
+              pack' y (y:acc) ys
+            else
+              (x:acc) : (pack' y [] ys)
+              
+              
