@@ -215,6 +215,11 @@ split xs 0 = ([], xs)
 split (x:xs) l = let (head, tail) = split xs (l-1) in
   (x:head, tail)
 
+testSplit :: String -> String -> Bool
+testSplit xs ys = (split (xs ++ ys) (length xs)) == (xs, ys)
+
+doTestSplit = quickCheck testSplit
+
 -- 18
 
 slice :: [a] -> Int -> Int -> [a]
@@ -222,14 +227,34 @@ slice xs 0 last = fst $ split xs (last + 1)
 slice [] _ _ = []
 slice (x:xs) first last = slice xs (first - 1) (last - 1) 
 
+testSlice :: String -> String -> String -> Bool
+testSlice xs ys zs = (slice (xs ++ ys ++ zs) (length xs) (length xs + length ys - 1)) == ys
+
+doTestSlice = quickCheck testSlice
+
 -- 19
 
 rotate :: [a] -> Int -> [a]
 rotate xs n = let (head, tail) = split xs (if n > 0 then n else ((length xs) + n)) in
   tail ++ head
 
+testRotate1 :: String -> String -> Bool
+testRotate1 xs ys = (rotate (xs ++ ys) (length xs)) == ys ++ xs
+
+testRotate2 :: String -> String -> Bool
+testRotate2 xs ys = (rotate (xs ++ ys) (- (length ys))) == ys ++ xs
+
+doTestRotate = do
+  quickCheck testRotate1
+  quickCheck testRotate2
+
 -- 20
 
 removeAt :: [a] -> Int -> [a]
-removeAt xs idx = let (head, tail) = split xs idx in
-  head ++ (drop 1 tail)
+removeAt xs idx = let (head, ttail) = split xs idx in
+  head ++ (tail ttail)
+
+testRemoveAt :: Char -> String -> String -> Bool
+testRemoveAt char head tail = (removeAt (head ++ [char] ++ tail) (length head)) == head ++ tail
+
+doTestRemoveAt = quickCheck testRemoveAt
