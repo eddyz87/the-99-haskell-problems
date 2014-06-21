@@ -1,5 +1,6 @@
 import Test.QuickCheck
 import Test.QuickCheck.Gen (choose)
+import Debug.Trace (trace)
 
 -- 1
 myLast :: [a] -> a
@@ -193,11 +194,24 @@ dupli :: [a] -> [a]
 dupli [] = []
 dupli (x:xs) = x:x:(dupli xs)
 
+doTestDupli = quickCheck (testRepli 2)
+
 -- 15
 
 repli :: [a] -> Int -> [a]
 repli [] _ = []
 repli (x:xs) cnt = (repeatN cnt x) ++ (repli xs cnt)
+
+testRepli :: Int -> String -> Bool
+testRepli n1 xs =
+  let n = (abs n1) `mod` 10 + 1
+      ys = repli xs n
+   in
+      all (\i -> (all (\y -> y == xs !! i)
+                      (slice ys (n * i) (n * i + n - 1))))
+          [0 .. length xs - 1]
+
+doTestRepli = quickCheck testRepli
 
 -- 16
 
@@ -206,6 +220,18 @@ dropEvery xs n = dropEvery' xs n
   where dropEvery' [] _ = []
         dropEvery' (x:xs) 0 = dropEvery' xs n
         dropEvery' (x:xs) i = x:(dropEvery' xs (i-1))
+
+testDropEvery :: Int -> Int -> Bool
+testDropEvery l1 n1 = 
+  let l = (abs l1)
+      n = (abs n1)
+      len = (mod (max l n) 100) + 1
+      step = (mod (min l n) 10) + 1
+      xs = dropEvery [0..len] step
+    in
+      all (\i -> (xs !! i) == (i + i `div` step)) [0..len - (len `div` step)]
+
+doTestDropEvery = quickCheck testDropEvery
 
 -- 17
 
