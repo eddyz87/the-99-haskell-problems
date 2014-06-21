@@ -137,4 +137,16 @@ pack (x:xs) = pack' x [] xs
             else
               (x:acc) : (pack' y [] ys)
               
-              
+-- 10
+
+
+encode :: Eq a => [a] -> [(Int, a)]
+encode [] = []
+encode (x:xs) = encode' x 1 xs
+  where encode' :: Eq a => a -> Int -> [a] -> [(Int, a)]
+        encode' x cnt [] = [(cnt,x)]
+        encode' x cnt (y:ys) =
+            if x == y then
+              encode' y (cnt+1) ys
+            else
+              (cnt,x) : (encode' y 1 ys)
