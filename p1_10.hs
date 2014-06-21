@@ -126,6 +126,7 @@ compress (x:xs) = compress' x xs
 
 
 -- 9
+
 pack :: Eq a => [a] -> [[a]]
 pack [] = []
 pack (x:xs) = pack' x [] xs
@@ -139,7 +140,6 @@ pack (x:xs) = pack' x [] xs
               
 -- 10
 
-
 encode :: Eq a => [a] -> [(Int, a)]
 encode [] = []
 encode (x:xs) = encode' x 1 xs
@@ -150,3 +150,25 @@ encode (x:xs) = encode' x 1 xs
               encode' y (cnt+1) ys
             else
               (cnt,x) : (encode' y 1 ys)
+              
+-- 11
+
+data Elt a = Multiple Int a
+           | Single a
+           deriving (Eq, Show)
+
+encodeModified :: Eq a => [a] -> [Elt a]
+encodeModified [] = []
+encodeModified (x:xs) = encodeModified' x 1 xs
+  where encodeModified' :: Eq a => a -> Int -> [a] -> [Elt a]
+        encodeModified' x cnt [] = [(mkElt cnt x)]
+        encodeModified' x cnt (y:ys) =
+          if x == y then
+            encodeModified' y (cnt+1) ys
+          else
+            (mkElt cnt x) : (encodeModified' y 1 ys)
+        mkElt cnt x =
+          if cnt == 1 then
+            (Single x)
+          else
+            (Multiple cnt x)
