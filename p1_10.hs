@@ -172,3 +172,64 @@ encodeModified (x:xs) = encodeModified' x 1 xs
             (Single x)
           else
             (Multiple cnt x)
+-- 12
+
+repeatN :: Int -> a -> [a]
+repeatN 0 _ = []
+repeatN i x = x:(repeatN (i-1) x)
+
+decodeModified :: [(Elt a)] -> [a]
+decodeModified [] = []
+decodeModified ((Single x):xs) = x : decodeModified xs
+decodeModified ((Multiple cnt x):xs) = (repeatN cnt x) ++ (decodeModified xs)
+
+-- 13
+
+-- ???
+
+-- 14
+
+dupli :: [a] -> [a]
+dupli [] = []
+dupli (x:xs) = x:x:(dupli xs)
+
+-- 15
+
+repli :: [a] -> Int -> [a]
+repli [] _ = []
+repli (x:xs) cnt = (repeatN cnt x) ++ (repli xs cnt)
+
+-- 16
+
+dropEvery :: [a] -> Int -> [a]
+dropEvery xs n = dropEvery' xs n
+  where dropEvery' [] _ = []
+        dropEvery' (x:xs) 0 = dropEvery' xs n
+        dropEvery' (x:xs) i = x:(dropEvery' xs (i-1))
+
+-- 17
+
+split :: [a] -> Int -> ([a], [a])
+split [] _ = ([], [])
+split xs 0 = ([], xs)
+split (x:xs) l = let (head, tail) = split xs (l-1) in
+  (x:head, tail)
+
+-- 18
+
+slice :: [a] -> Int -> Int -> [a]
+slice xs 0 last = fst $ split xs (last + 1)
+slice [] _ _ = []
+slice (x:xs) first last = slice xs (first - 1) (last - 1) 
+
+-- 19
+
+rotate :: [a] -> Int -> [a]
+rotate xs n = let (head, tail) = split xs (if n > 0 then n else ((length xs) + n)) in
+  tail ++ head
+
+-- 20
+
+removeAt :: [a] -> Int -> [a]
+removeAt xs idx = let (head, tail) = split xs idx in
+  head ++ (drop 1 tail)
