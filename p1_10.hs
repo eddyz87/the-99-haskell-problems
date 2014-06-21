@@ -158,6 +158,17 @@ data Elt a = Multiple Int a
            | Single a
            deriving (Eq, Show)
 
+instance Arbitrary a => Arbitrary (Elt a) where
+  arbitrary = do
+    nest <- choose(True, False)
+    elt <- (arbitrary :: Arbitrary a => Gen a)
+    if nest then
+      do
+        cnt <- (arbitrary :: Gen Int)
+        return $ Multiple ((abs cnt) `mod` 10 + 2) elt
+    else
+      return $ Single elt
+
 encodeModified :: Eq a => [a] -> [Elt a]
 encodeModified [] = []
 encodeModified (x:xs) = encodeModified' x 1 xs
@@ -183,6 +194,20 @@ decodeModified :: [(Elt a)] -> [a]
 decodeModified [] = []
 decodeModified ((Single x):xs) = x : decodeModified xs
 decodeModified ((Multiple cnt x):xs) = (repeatN cnt x) ++ (decodeModified xs)
+
+testEncodeDecodeModified :: [Elt Int] -> Bool
+testEncodeDecodeModified [] = True
+testEncodeDecodeModified (x:xs) = 
+  let ys = removeDuplicates x xs in
+    (encodeModified . decodeModified) ys == ys
+  where removeDuplicates _ [] = []
+        removeDuplicates prev_elt (x:xs) =
+          if prev_elt == x then
+            removeDuplicates x xs
+          else
+            prev_elt : (removeDuplicates x xs)
+
+doTestEncodeDecodeModified = quickCheck testEncodeDecodeModified
 
 -- 13
 
