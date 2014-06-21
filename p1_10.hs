@@ -125,6 +125,13 @@ compress (x:xs) = compress' x xs
                                else
                                  x : (compress' y ys)
 
+testCompress :: String -> Bool
+testCompress [] = True
+testCompress l@(x:xs) = test x ((tail . compress) l)
+  where test _ [] = True
+        test x (y:ys) = (x /= y) && (test y ys)
+
+doTestCompress = quickCheck testCompress
 
 -- 9
 
@@ -139,6 +146,11 @@ pack (x:xs) = pack' x [] xs
             else
               (x:acc) : (pack' y [] ys)
               
+testPack :: String -> Bool
+testPack xs = (foldl (++) [] (pack xs)) == xs
+
+doTestPack = quickCheck testPack
+
 -- 10
 
 encode :: Eq a => [a] -> [(Int, a)]
@@ -152,6 +164,15 @@ encode (x:xs) = encode' x 1 xs
             else
               (cnt,x) : (encode' y 1 ys)
               
+decode :: [(Int, a)] -> [a]
+decode [] = []
+decode ((cnt, elt):xs) = (repeatN cnt elt) ++ (decode xs)
+
+testEncode :: String -> Bool
+testEncode xs = ((decode . encode) xs) == xs
+
+doTestEncode = quickCheck testEncode
+
 -- 11
 
 data Elt a = Multiple Int a
