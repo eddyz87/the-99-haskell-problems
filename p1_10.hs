@@ -96,22 +96,18 @@ flatten x = myReverse $ flatten' [x] [] []
         flatten' [] (xs:queue) acc = flatten' xs queue acc
         flatten' [] [] acc = acc
 
-newtype Boo = Boo (NestedList Int, [Int]) deriving (Eq, Show)
+testFlatten :: [(Bool, Int, Int)] -> Bool
+testFlatten spec = (flatten $ List $ mkNested spec) == (mkFlat spec)
+  where mkFlat spec = map (\(_, _, x) -> x) spec
+        mkNested :: [(Bool, Int, Int)] -> [NestedList Int]
+        mkNested [] = []
+        mkNested ((False, _, elt):xs) = (Elem elt) : (mkNested xs)
+        mkNested ((True, len, elt):xs) =
+          let (ys, zs) = splitAt (((abs len) + 1) `mod` 20) xs
+           in
+              (Elem elt) : (List $ mkNested ys) : (mkNested zs)
 
-booNested (Boo (n, _)) = n
-booList (Boo (_, l)) = l
-
-instance Arbitrary Boo where
-  arbitrary = do
-    nest <- choose(True, False)
-    if nest then
-     do
-      nested <- (arbitrary :: Gen [Boo] )
-      return $ Boo (List $ map booNested nested, foldl (++) [] $ map booList nested)
-    else
-     do
-      val <- (arbitrary :: Gen Int)
-      return $ Boo (Elem val, [val])
+doTestFlatten = quickCheck testFlatten
 
 -- 8
       
