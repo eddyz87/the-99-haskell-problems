@@ -1,6 +1,8 @@
 import Test.QuickCheck
 import Test.QuickCheck.Gen (choose)
 import Debug.Trace (trace)
+import System.Random (randomIO)
+import Data.List (delete)
 
 -- 1
 myLast :: [a] -> a
@@ -326,3 +328,76 @@ testRemoveAt :: Char -> String -> String -> Bool
 testRemoveAt char head tail = (removeAt (head ++ [char] ++ tail) (length head)) == head ++ tail
 
 doTestRemoveAt = quickCheck testRemoveAt
+
+-- 21
+insertAt :: a -> [a] -> Int -> [a]
+insertAt elm list 0 = elm:list
+insertAt elm [] _ = [elm]
+insertAt elm (x:xs) idx = x:(insertAt elm xs $ idx - 1)
+
+-- 22
+range :: Int -> Int -> [Int]
+range x y | x == y = [x]
+          | x < y = x:(range (x+1) y)
+          | x > y = []
+
+-- 23 v1
+rnd_select :: [a] -> Int -> IO ([a])
+rnd_select list num = select list $ mkPositions (num `min` max_index) []
+    where max_index = length list -- Q: how to get rid of this? can'r be used on infinite lists
+          select :: [a] -> IO ([Int]) -> IO ([a])
+          -- Q: why I can't remove 'list' parameter from select func
+          select list positions' = do
+              positions'' <- positions'
+              case positions'' of
+                  [] -> return []
+                  (p:positions) -> do
+                      tail <- (select list $ return positions)
+                      return $ (list !! p) : tail
+          mkPositions :: Int -> [Int] -> IO ([Int])
+          mkPositions 0 used = return []
+          mkPositions n used = do
+              val' <- randomIO :: IO (Int)
+              let val = val' `mod` max_index in
+                  if elem val used then
+                    mkPositions n used
+                  else
+                    do
+                        tail <- mkPositions (n-1) (val:used)
+                        return $ val:tail
+-- 24
+diff_select :: Int -> Int -> IO ([Int])
+diff_select num maximum = rnd_select (range 1 maximum) num
+
+-- 25
+rnd_permu :: [a] -> IO([a])
+rnd_permu list = do
+    let size = length list
+    indexes <- rnd_select (range 0 (size-1)) size
+    return $ map (\idx -> list !! idx) indexes
+
+-- 26
+combinations :: Eq a => Int -> [a] -> [[a]]
+combinations 1 list = map (\x -> [x]) list
+combinations _ [] = []
+combinations num list =
+  [x:sublist | x <- list, sublist <- (combinations (num - 1) (delete x list))]
+
+   
+-- -- | The main entry point.
+-- main :: IO ()
+-- main = do
+-- --    putStrLn $ show $ insertAt 1 [] 10
+-- --    putStrLn $ show $ insertAt 1 [10,20] 0
+-- --    putStrLn $ show $ insertAt 1 [10,20] 1
+-- --    putStrLn $ show $ insertAt 1 [10,20] 2
+-- --    putStrLn $ show $ insertAt 1 [10,20] 3
+-- --    putStrLn $ show $ range 9 0
+-- --    putStrLn $ show $ range 1 1
+-- --    putStrLn $ show $ range 1 5
+--     rnd_select (range 0 9) 3 >>= putStrLn.show
+--     rnd_select (range 0 9) 0 >>= putStrLn.show
+--     rnd_select (range 0 9) 30 >>= putStrLn.show
+-- --    diff_select 5 100 >>= putStrLn.show
+-- --    rnd_permu "abcdef" >>= putStrLn.show
+-- --    rnd_permu "abcdef" >>= putStrLn.show
